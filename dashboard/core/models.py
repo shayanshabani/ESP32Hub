@@ -1,12 +1,73 @@
+import time
+import uuid
+from datetime import datetime, timedelta
+
 from django.db import models
 
-# Create your models here.
+TYPE_CHOICES = [
+    (0, 'Boolean Actuator'),
+    (1, 'Integer Actuator'),
+    (2, 'Sensor'),
+]
+
+
+class Device(models.Model):
+    name = models.CharField(max_length=50)
+    topic = models.CharField(max_length=50)
+    token = models.UUIDField(default=uuid.uuid4, editable=False)
+    device_type = models.IntegerChoices(TYPE_CHOICES)
+
+    def publish_message(self, message):
+        pass
+
+    def on_message(self, message):
+        # Implement your logic for handling incoming messages
+        pass
+
+    def get(self):
+        # Implement your custom logic for retrieving data
+        pass
+
+    def get_element(self):
+        # Implement your custom logic for retrieving specific elements
+        pass
+
+    def __str__(self):
+        return self.name  # Customize the string representation for admin display
+
+
+class IntegerActuator(Device):
+
+    def send_int(self, number):
+        self.publish_message(str(number))
+
+
+class BooleanActuator(Device):
+
+    def turn_on(self):
+        self.publish_message('on')
+
+    def turn_off(self):
+        self.publish_message('off')
+
+
+class Sensor(Device):
+
+    def on_message(self, message):
+        timestamp = int(time.time())
+        DataModel.objects.create(device=self, message=message)
+
+    def get_data(self):
+        current_datetime = datetime.now()
+        one_hour_ago = current_datetime - timedelta(hours=1)
+        recent_messages = DataModel.objects.filter(device=self, received_at__gt=one_hour_ago).order_by('received_at')
+        return recent_messages
 
 
 class DataModel(models.Model):
-    topic = models.CharField(max_length=256)
+    device = models.ForeignKey(Device, on_delete=models.CASCADE, related_name='data')  # Add this line
     message = models.TextField()
     received_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"{self.topic} - {self.message[:50]}"
+        return f"{self.device} - {self.message[:50]}"

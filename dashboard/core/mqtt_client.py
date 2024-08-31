@@ -32,8 +32,6 @@ def on_message(client, userdata, msg):
 
 
 def start_mqtt_client():
-    redis_client = redis.StrictRedis(host='localhost', port=6379, db=0)
-
     client = mqtt.Client()
     client.on_connect = on_connect
     client.on_message = on_message
