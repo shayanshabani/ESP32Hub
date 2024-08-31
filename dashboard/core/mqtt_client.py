@@ -5,8 +5,8 @@ import paho.mqtt.client as mqtt
 
 
 MQTT_BROKER = "bore.pub"
-MQTT_PORT = 19275
-MQTT_KEEPALIVE = 900
+MQTT_PORT = 7893
+MQTT_KEEPALIVE = 60
 MQTT_USER = "uname"
 MQTT_PASSWORD = "upass"
 MQTT_DEVICES = {}
