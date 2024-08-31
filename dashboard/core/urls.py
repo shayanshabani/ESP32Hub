@@ -5,9 +5,13 @@ from core.views import HomePageView
 
 urlpatterns = [
     path('', HomePageView.as_view(), name='home'),
-    path('buzzer-on/', views.buzzer_on, name='buzzer_on'),
-    path('led-on/', views.led_on, name='led_on'),
-    path('servo/<int:pk>', views.servo, name='servo'),
-    path('buzzer-off/', views.buzzer_off, name='buzzer_off'),
-    path('led-off/', views.led_off, name='led_off'),
+    path('sensor/data/<str:uid>', views.get_data, name='get_data'),
+
+    path('devices', views.get_device_list, name='get_device_list'),
+
+    path('boolean/<str:uid>/on', views.turn_on, name='turn_on'),
+    path('boolean/<str:uid>/off', views.turn_off, name='turn_off'),
+
+    path('integer/<str:uid>', views.integer, name='send_int'),
+
 ]

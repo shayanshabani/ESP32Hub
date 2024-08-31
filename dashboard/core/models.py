@@ -62,7 +62,7 @@ class Sensor(Device):
 
     def get_data(self):
         current_datetime = datetime.now()
-        one_hour_ago = current_datetime - timedelta(hours=1)
+        one_hour_ago = current_datetime - timedelta(minutes=10)
         recent_messages = DataModel.objects.filter(device=self, received_at__gt=one_hour_ago).order_by('received_at')
         return recent_messages
 
