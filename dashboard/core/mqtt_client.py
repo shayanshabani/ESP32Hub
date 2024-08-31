@@ -1,38 +1,50 @@
+import json
 import threading
-import time
-import redis
 
 import paho.mqtt.client as mqtt
-import django
-import os
 
-from core.models import DataModel
+from core.models import Device
 
 MQTT_BROKER = "192.168.136.198"
 MQTT_PORT = 1883
 MQTT_KEEPALIVE = 60
-MQTT_TOPICS = [("light", 0), ("sound", 0), ("ultrasound", 0)]
 MQTT_USER = "uname"
 MQTT_PASSWORD = "upass"
 MQTT_DEVICES = {}
 
+
 # os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'myproject.settings')
 # django.setup()
+class SingletonMeta(type):
+    _instances = {}
+
+    def __call__(cls, *args, **kwargs):
+        if cls not in cls._instances:
+            cls._instances[cls] = super().__call__(*args, **kwargs)
+        return cls._instances[cls]
+
+
+class SingletonClient(metaclass=SingletonMeta):
+    def __init__(self):
+        self.client = mqtt.Client()
 
 
 def on_connect(client, userdata, flags, rc):
     print(f"Connected with result code {rc}")
-    for topic, qos in MQTT_TOPICS:
-        client.subscribe(topic, qos)
+    dev = Device.objects.all()
+    for device in dev:
+        client.subscribe(device.topic, 0)
 
 
 def on_message(client, userdata, msg):
+    payload = json.loads(msg.payload.decode())
     print(f"Topic: {msg.topic}\nMessage: {msg.payload.decode()}")
-    MQTT_DEVICES[msg.topic].on_message(msg.payload.decode())
+    device = Device.objects.get(token=payload['token'])
+    device.on_message(payload['data'])
 
 
 def start_mqtt_client():
-    client = mqtt.Client()
+    client = SingletonClient().client
     client.on_connect = on_connect
     client.on_message = on_message
     client.username_pw_set(MQTT_USER, MQTT_PASSWORD)

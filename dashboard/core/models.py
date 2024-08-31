@@ -1,8 +1,10 @@
 import time
 import uuid
 from datetime import datetime, timedelta
-
+import json
 from django.db import models
+
+from core.mqtt_client import SingletonClient
 
 TYPE_CHOICES = [
     (0, 'Boolean Actuator'),
@@ -18,7 +20,9 @@ class Device(models.Model):
     device_type = models.IntegerChoices(TYPE_CHOICES)
 
     def publish_message(self, message):
-        pass
+        dic = {'data': message, 'token': str(self.token)}
+        json_string = json.dumps(dic)
+        SingletonClient().client.publish(self.topic, json_string)
 
     def on_message(self, message):
         # Implement your logic for handling incoming messages
