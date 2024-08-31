@@ -3,10 +3,6 @@ from django.db import models
 # Create your models here.
 
 
-class Device(models.Model):
-    type = models.CharField(max_length=200)
-
-
 class DataModel(models.Model):
     topic = models.CharField(max_length=256)
     message = models.TextField()
