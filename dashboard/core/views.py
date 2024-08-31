@@ -4,6 +4,7 @@ from django.http import JsonResponse
 from django.views.generic import TemplateView
 
 from core.models import Device, Sensor, BooleanActuator, IntegerActuator
+from core.mqtt_client import SingletonClient
 
 
 class HomePageView(TemplateView):
@@ -41,3 +42,11 @@ def integer(request, uid):
     num = data.get('number')
     device: IntegerActuator = Device.objects.get(uid=uid)
     device.send_int(num)
+
+
+def start(request):
+    client = SingletonClient().client
+    from core.models import Device
+    devices = Device.objects.all()
+    for device in devices:
+        client.subscribe(device.topic, 0)

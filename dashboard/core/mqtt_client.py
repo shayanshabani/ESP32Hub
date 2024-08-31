@@ -5,8 +5,8 @@ import paho.mqtt.client as mqtt
 
 
 MQTT_BROKER = "bore.pub"
-MQTT_PORT = 10939
-MQTT_KEEPALIVE = 60
+MQTT_PORT = 19275
+MQTT_KEEPALIVE = 900
 MQTT_USER = "uname"
 MQTT_PASSWORD = "upass"
 MQTT_DEVICES = {}
@@ -35,8 +35,10 @@ def on_connect(client, userdata, flags, rc):
 def on_message(client, userdata, msg):
     payload = json.loads(msg.payload.decode())
     print(f"Topic: {msg.topic}\nMessage: {msg.payload.decode()}")
-    from models import Device
+    from core.models import Device,Sensor
     device = Device.objects.get(token=payload['token'])
+    if device.device_type == 2:
+        device: Sensor = Sensor.objects.get(token=payload['token'])
     device.on_message(payload['data'])
 
 
@@ -53,5 +55,3 @@ def run_mqtt_client_in_thread():
     mqtt_thread = threading.Thread(target=start_mqtt_client)
     mqtt_thread.daemon = True
     mqtt_thread.start()
-
-

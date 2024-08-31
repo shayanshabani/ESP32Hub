@@ -67,6 +67,7 @@ class Sensor(Device):
         return recent_messages
 
 
+
 class DataModel(models.Model):
     device = models.ForeignKey(Device, on_delete=models.CASCADE, related_name='data')  # Add this line
     message = models.TextField()
