@@ -17,7 +17,7 @@ class Device(models.Model):
     name = models.CharField(max_length=50)
     topic = models.CharField(max_length=50)
     token = models.UUIDField(default=uuid.uuid4, editable=False)
-    device_type = models.IntegerChoices(TYPE_CHOICES)
+    device_type = models.SmallIntegerField(choices=TYPE_CHOICES)
 
     def publish_message(self, message):
         dic = {'data': message, 'token': str(self.token)}
@@ -37,7 +37,7 @@ class Device(models.Model):
         pass
 
     def __str__(self):
-        return self.name  # Customize the string representation for admin display
+        return self.token
 
 
 class IntegerActuator(Device):
@@ -58,7 +58,6 @@ class BooleanActuator(Device):
 class Sensor(Device):
 
     def on_message(self, message):
-        timestamp = int(time.time())
         DataModel.objects.create(device=self, message=message)
 
     def get_data(self):
