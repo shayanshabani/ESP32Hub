@@ -118,7 +118,7 @@ export default {
           range: 60000,
         },
         yaxis: {
-          max: 100,
+          max: 0,
         },
         legend: {
           show: false,
@@ -174,6 +174,15 @@ export default {
             const data = response.data;
             if (Array.isArray(data)) {
               this.seriesData[index] = [{ data }];
+              const currentMaxValue = Math.max(...data.map(point => point['y']));
+              this.chartOptions = {
+                ...this.chartOptions,
+                yaxis: {
+                  ...this.chartOptions.yaxis,
+                  max: Math.ceil(currentMaxValue + 1),
+                },
+              };
+              this.$refs[`chart${index}`][0].updateOptions(this.chartOptions, false, false);
             }
           })
           .catch((error) => {
