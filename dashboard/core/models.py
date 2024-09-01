@@ -2,6 +2,8 @@ import time
 import uuid
 from datetime import datetime, timedelta
 import json
+
+import pytz
 from django.db import models
 
 from core.mqtt_client import SingletonClient
@@ -63,6 +65,7 @@ class Sensor(Device):
     def get_data(self):
         current_datetime = datetime.now()
         one_hour_ago = current_datetime - timedelta(minutes=10)
+        one_hour_ago= one_hour_ago.astimezone(pytz.UTC)
         recent_messages = DataModel.objects.filter(device=self, received_at__gt=one_hour_ago).order_by('received_at')
         return recent_messages
 

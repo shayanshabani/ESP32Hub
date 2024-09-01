@@ -1,8 +1,14 @@
 import json
 
+from django.contrib.auth import authenticate
+from django.contrib.auth.models import User
 from django.http import JsonResponse
 from django.views.generic import TemplateView
-
+from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.models import User
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+import json
 from core.models import Device, Sensor, BooleanActuator, IntegerActuator
 from core.mqtt_client import SingletonClient
 
@@ -30,18 +36,20 @@ def get_device_list(request):
 def turn_on(request, uid):
     device: BooleanActuator = BooleanActuator.objects.get(token=uid)
     device.turn_on()
+    return JsonResponse(data={'data': 'success'})
 
 
 def turn_off(request, uid):
     device: BooleanActuator = BooleanActuator.objects.get(token=uid)
     device.turn_off()
+    return JsonResponse(data={'data': 'success'})
 
 
 def integer(request, uid):
-    data = json.loads(request.body)
-    num = data.get('number')
+    num = request.GET.get('value',None)
     device: IntegerActuator = IntegerActuator.objects.get(token=uid)
     device.send_int(num)
+    return JsonResponse(data={'data': 'success'})
 
 
 def start(request):
@@ -50,12 +58,12 @@ def start(request):
     devices = Device.objects.all()
     for device in devices:
         client.subscribe(device.topic, 0)
+    return JsonResponse(data={'data': 'success'})
 
 
 def add(request):
-    data = json.loads(request.body)
-    name = data.get('name')
-    device_type = data.get('type')
+    name = request.GET.get('name')
+    device_type = request.GET.get('type')
     from core.models import Sensor, BooleanActuator, IntegerActuator
     if int(device_type) == 0:
         BooleanActuator.objects.create(name=name, topic=name, device_type=device_type)
@@ -63,3 +71,29 @@ def add(request):
         IntegerActuator.objects.create(name=name, topic=name, device_type=device_type)
     else:
         Sensor.objects.create(name=name, topic=name, device_type=device_type)
+    return JsonResponse(data={'data': 'success'})
+
+
+@csrf_exempt
+def login_view(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        username = data.get('username')
+        password = data.get('password')
+        user = authenticate(request, username=username, password=password)
+        if user is not None:
+            login(request, user)
+            return JsonResponse({'message': 'Login successful'})
+        else:
+            return JsonResponse({'message': 'Invalid credentials'}, status=400)
+
+@csrf_exempt
+def signup_view(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        username = data.get('username')
+        password = data.get('password')
+        if User.objects.filter(username=username).exists():
+            return JsonResponse({'message': 'User already exists'}, status=400)
+        user = User.objects.create_user(username=username, password=password)
+        return JsonResponse({'message': 'Signup successful'})
