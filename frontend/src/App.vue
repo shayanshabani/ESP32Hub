@@ -32,7 +32,7 @@
               type="line"
               height="350"
               :ref="'chart' + index"
-              :options="chartOptions"
+              :options="chartOptionsList[index]"
               :series="seriesData[index]"
           ></ApexChartComponent>
         </div>
@@ -81,49 +81,7 @@ export default {
       devices: [],
       buttonStates: {},
       formValues: {},
-      chartOptions: {
-        chart: {
-          id: 'realtime',
-          height: 350,
-          type: 'line',
-          animations: {
-            enabled: true,
-            easing: 'linear',
-            dynamicAnimation: {
-              speed: 1000,
-            },
-          },
-          toolbar: {
-            show: false,
-          },
-          zoom: {
-            enabled: false,
-          },
-        },
-        dataLabels: {
-          enabled: false,
-        },
-        stroke: {
-          curve: 'smooth',
-        },
-        title: {
-          text: '',
-          align: 'left',
-        },
-        markers: {
-          size: 0,
-        },
-        xaxis: {
-          type: 'datetime',
-          range: 60000,
-        },
-        yaxis: {
-          max: 0,
-        },
-        legend: {
-          show: false,
-        },
-      },
+      chartOptionsList: [],
       newDevice: {
         name: '',
         uid: '',
@@ -145,6 +103,7 @@ export default {
           this.devices.forEach((device, index) => {
             if (device.type === 2) {
               this.seriesData.push([{ name: `Series ${index + 1}`, data: [] }]);
+              this.chartOptionsList.push({ ...this.defaultChartOptions });
               this.fetchData(device.uid, index);
             } else if (device.type === 0) {
               this.buttonStates[device.uid] = true;
@@ -174,15 +133,18 @@ export default {
             const data = response.data;
             if (Array.isArray(data)) {
               this.seriesData[index] = [{ data }];
-              const currentMaxValue = Math.max(...data.map(point => point['y']));
-              this.chartOptions = {
-                ...this.chartOptions,
+              const currentMaxValue = Math.max(...data.map((point) => point['y']));
+              this.chartOptionsList[index] = {
+                ...this.chartOptionsList[index],
                 yaxis: {
-                  ...this.chartOptions.yaxis,
                   max: Math.ceil(currentMaxValue + 1),
                 },
               };
-              this.$refs[`chart${index}`][0].updateOptions(this.chartOptions, false, false);
+              this.$refs[`chart${index}`][0].updateOptions(
+                  this.chartOptionsList[index],
+                  false,
+                  false
+              );
             }
           })
           .catch((error) => {
@@ -240,8 +202,56 @@ export default {
           });
     },
   },
+  computed: {
+    defaultChartOptions() {
+      return {
+        chart: {
+          id: 'realtime',
+          height: 350,
+          type: 'line',
+          animations: {
+            enabled: true,
+            easing: 'linear',
+            dynamicAnimation: {
+              speed: 1000,
+            },
+          },
+          toolbar: {
+            show: false,
+          },
+          zoom: {
+            enabled: false,
+          },
+        },
+        dataLabels: {
+          enabled: false,
+        },
+        stroke: {
+          curve: 'smooth',
+        },
+        title: {
+          text: '',
+          align: 'left',
+        },
+        markers: {
+          size: 0,
+        },
+        xaxis: {
+          type: 'datetime',
+          range: 60000,
+        },
+        yaxis: {
+          max: 0,
+        },
+        legend: {
+          show: false,
+        },
+      };
+    },
+  },
 };
 </script>
+
 
 <style>
 #app {
