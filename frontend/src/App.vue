@@ -43,7 +43,7 @@
 
       <br>
       <br>
-      <div class="container">
+
         <div class="device-card add-device-card">
           <h1>Add New Device</h1>
           <form @submit.prevent="addDevice" class="control-form">
@@ -72,7 +72,7 @@
         </div>
       </div>
     </div>
-  </div>
+
 </template>
 
 <script>
@@ -85,6 +85,8 @@ export default {
   },
   data() {
     return {
+      username: null,
+      password: null,
       isAuthenticated: false,
       seriesData: [],
       devices: [],
@@ -99,8 +101,10 @@ export default {
     };
   },
   mounted() {
+    this.username = localStorage.getItem('username');
+    this.password = localStorage.getItem('password');
     axios
-        .get('http://127.0.0.1:8000/devices')
+        .get(`http://127.0.0.1:8000/devices/?username=${encodeURIComponent(this.username)}&password=${encodeURIComponent(this.password)}`)
         .then((response) => {
           const devices = response.data;
           this.devices = devices.map((device) => ({
@@ -140,7 +144,7 @@ export default {
     },
     fetchData(uid, index) {
       axios
-          .get(`http://127.0.0.1:8000/sensor/data/${uid}`)
+          .get(`http://127.0.0.1:8000/sensor/data/${uid}/?username=${encodeURIComponent(this.username)}&password=${encodeURIComponent(this.password)}`)
           .then((response) => {
             const data = response.data;
             if (Array.isArray(data)) {
@@ -167,7 +171,7 @@ export default {
       const isOn = this.buttonStates[uid];
       const newState = isOn ? 'off' : 'on';
       axios
-          .get(`http://127.0.0.1:8000/boolean/${uid}/${newState}/`)
+          .get(`http://127.0.0.1:8000/boolean/${uid}/${newState}/?username=${encodeURIComponent(this.username)}&password=${encodeURIComponent(this.password)}`)
           .then(() => {
             this.buttonStates[uid] = !isOn;
           })
@@ -182,7 +186,7 @@ export default {
       }
       const url = `http://127.0.0.1:8000/integer/${uid}/?value=${encodeURIComponent(
           value
-      )}`;
+      )}&username=${encodeURIComponent(this.username)}&password=${encodeURIComponent(this.password)}`;
       axios
           .get(url)
           .then(() => {
@@ -200,7 +204,7 @@ export default {
       }
       const url = `http://127.0.0.1:8000/add/?name=${encodeURIComponent(
           name
-      )}&uid=${encodeURIComponent(uid)}&type=${type}`;
+      )}&uid=${encodeURIComponent(uid)}&type=${type}&username=${encodeURIComponent(this.username)}&password=${encodeURIComponent(this.password)}`;
       axios
           .get(url)
           .then(() => {
@@ -280,8 +284,8 @@ export default {
 }
 
 .container {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
   gap: 20px;
   width: 100%;
   max-width: 800px;
@@ -289,6 +293,12 @@ export default {
   background: #f1f1f1;
   border-radius: 8px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+@media (max-width: 600px) {
+  .container {
+    grid-template-columns: 1fr;
+  }
 }
 
 .device-card {
@@ -302,6 +312,7 @@ export default {
 .device-card:hover {
   transform: scale(1.02);
 }
+
 
 button {
   border: none;

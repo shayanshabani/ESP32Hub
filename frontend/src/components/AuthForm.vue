@@ -53,6 +53,8 @@ export default {
           .get(url)
           .then((response) => {
             if (response.data.success) {
+              localStorage.setItem('username', this.username);
+              localStorage.setItem('password', this.password);
               this.$emit('auth-success');
             } else {
               this.message = response.data.message;
