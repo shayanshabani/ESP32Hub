@@ -4,8 +4,8 @@ from core import views
 from core.views import HomePageView
 
 urlpatterns = [
-    path('api/login/', views.login_view, name='login'),
-    path('api/signup/', views.signup_view, name='signup'),
+    path('login/', views.login, name='login'),
+    path('signup/', views.signup, name='signup'),
     path('', HomePageView.as_view(), name='home'),
     path('sensor/data/<str:uid>', views.get_data, name='get_data'),
 

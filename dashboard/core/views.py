@@ -1,14 +1,7 @@
-import json
-
-from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
 from django.http import JsonResponse
 from django.views.generic import TemplateView
-from django.contrib.auth import authenticate, login, logout
-from django.contrib.auth.models import User
-from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
-import json
+
 from core.models import Device, Sensor, BooleanActuator, IntegerActuator
 from core.mqtt_client import SingletonClient
 
@@ -46,7 +39,7 @@ def turn_off(request, uid):
 
 
 def integer(request, uid):
-    num = request.GET.get('value',None)
+    num = request.GET.get('value', None)
     device: IntegerActuator = IntegerActuator.objects.get(token=uid)
     device.send_int(num)
     return JsonResponse(data={'data': 'success'})
@@ -74,26 +67,41 @@ def add(request):
     return JsonResponse(data={'data': 'success'})
 
 
-@csrf_exempt
-def login_view(request):
-    if request.method == 'POST':
-        data = json.loads(request.body)
-        username = data.get('username')
-        password = data.get('password')
-        user = authenticate(request, username=username, password=password)
-        if user is not None:
-            login(request, user)
-            return JsonResponse({'message': 'Login successful'})
-        else:
-            return JsonResponse({'message': 'Invalid credentials'}, status=400)
+def login(request):
+    username = request.GET.get('username', None)
+    password = request.GET.get('password', None)
+    try:
+        user = User.objects.get(username=username)
+        if user.password == password:
+            data = {
+                'success': True,
+                'message': 'logged in successfully',
+            }
+            return JsonResponse(data, safe=False)
+    except:
+        print('e')
+    data = {
+        'success': False,
+        'message': 'login fail',
+    }
+    return JsonResponse(data, safe=False)
 
-@csrf_exempt
-def signup_view(request):
-    if request.method == 'POST':
-        data = json.loads(request.body)
-        username = data.get('username')
-        password = data.get('password')
-        if User.objects.filter(username=username).exists():
-            return JsonResponse({'message': 'User already exists'}, status=400)
-        user = User.objects.create_user(username=username, password=password)
-        return JsonResponse({'message': 'Signup successful'})
+
+def signup(request):
+    username = request.GET.get('username', None)
+    password = request.GET.get('password', None)
+    try:
+        User.objects.create(username=username, password=password)
+        data = {
+            'success': False,
+            'message': 'Sorry cannot sign you in',
+        }
+        return JsonResponse(data, safe=False)
+
+    except:
+        print('signup error')
+    data = {
+        'success': True,
+        'message': 'Sorry cannot sign you in',
+    }
+    return JsonResponse(data, safe=False)
