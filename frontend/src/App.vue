@@ -1,71 +1,75 @@
 <template>
   <div id="app">
-    <div class="container" v-if="devices.length > 0">
-      <div
-          v-for="(device, index) in devices"
-          :key="device.uid"
-          class="device-card"
-      >
-        <h1>{{ device.name }}</h1>
-        <div v-if="device.type === 0" class="control-button">
-          <button
-              :class="buttonStates[device.uid] ? 'button-on' : 'button-off'"
-              @click="toggleButtonState(device.uid)"
-          >
-            {{ buttonStates[device.uid] ? 'ON' : 'OFF' }}
-          </button>
-        </div>
-        <div v-else-if="device.type === 1" class="control-form">
-          <form @submit.prevent="submitForm(device.uid, formValues[device.uid])">
-            <input
-                type="number"
-                v-model.number="formValues[device.uid]"
-                class="form-input"
-                placeholder="Enter an integer"
-                required
-            />
-            <button type="submit" class="form-submit">Send</button>
-          </form>
-        </div>
-        <div v-else-if="device.type === 2" class="chart-wrapper">
-          <ApexChartComponent
-              type="line"
-              height="350"
-              :ref="'chart' + index"
-              :options="chartOptionsList[index]"
-              :series="seriesData[index]"
-          ></ApexChartComponent>
+    <AuthForm v-if="!isAuthenticated" @auth-success="onAuthSuccess" />
+    <div v-else>
+      <div class="container" v-if="devices.length > 0">
+        <div
+            v-for="(device, index) in devices"
+            :key="device.uid"
+            class="device-card"
+        >
+          <h1>{{ device.name }}</h1>
+          <div v-if="device.type === 0" class="control-button">
+            <button
+                :class="buttonStates[device.uid] ? 'button-on' : 'button-off'"
+                @click="toggleButtonState(device.uid)"
+            >
+              {{ buttonStates[device.uid] ? 'ON' : 'OFF' }}
+            </button>
+          </div>
+          <div v-else-if="device.type === 1" class="control-form">
+            <form @submit.prevent="submitForm(device.uid, formValues[device.uid])">
+              <input
+                  type="number"
+                  v-model.number="formValues[device.uid]"
+                  class="form-input"
+                  placeholder="Enter an integer"
+                  required
+              />
+              <button type="submit" class="form-submit">Send</button>
+            </form>
+          </div>
+          <div v-else-if="device.type === 2" class="chart-wrapper">
+            <ApexChartComponent
+                type="line"
+                height="350"
+                :ref="'chart' + index"
+                :options="chartOptionsList[index]"
+                :series="seriesData[index]"
+            ></ApexChartComponent>
+          </div>
         </div>
       </div>
-    </div>
-    <br>
-    <br>
-    <div class="container">
-      <div class="device-card add-device-card">
-        <h1>Add New Device</h1>
-        <form @submit.prevent="addDevice" class="control-form">
-          <input
-              type="text"
-              v-model="newDevice.name"
-              class="form-input"
-              placeholder="Device Name"
-              required
-          />
-          <input
-              type="text"
-              v-model="newDevice.uid"
-              class="form-input"
-              placeholder="UID"
-              required
-          />
-          <select v-model.number="newDevice.type" class="form-input" required>
-            <option disabled value="">Select Type</option>
-            <option value=0>Type 0</option>
-            <option value=1>Type 1</option>
-            <option value=2>Type 2</option>
-          </select>
-          <button type="submit" class="form-submit">Add Device</button>
-        </form>
+
+      <br>
+      <br>
+      <div class="container">
+        <div class="device-card add-device-card">
+          <h1>Add New Device</h1>
+          <form @submit.prevent="addDevice" class="control-form">
+            <input
+                type="text"
+                v-model="newDevice.name"
+                class="form-input"
+                placeholder="Device Name"
+                required
+            />
+            <input
+                type="text"
+                v-model="newDevice.uid"
+                class="form-input"
+                placeholder="UID"
+                required
+            />
+            <select v-model.number="newDevice.type" class="form-input" required>
+              <option disabled value="">Select Type</option>
+              <option value=0>Type 0</option>
+              <option value=1>Type 1</option>
+              <option value=2>Type 2</option>
+            </select>
+            <button type="submit" class="form-submit">Add Device</button>
+          </form>
+        </div>
       </div>
     </div>
   </div>
@@ -73,10 +77,15 @@
 
 <script>
 import axios from 'axios';
+import AuthForm from "./components/AuthForm";
 
 export default {
+  components: {
+    AuthForm,
+  },
   data() {
     return {
+      isAuthenticated: false,
       seriesData: [],
       devices: [],
       buttonStates: {},
@@ -126,6 +135,9 @@ export default {
         });
   },
   methods: {
+    onAuthSuccess() {
+      this.isAuthenticated = true;
+    },
     fetchData(uid, index) {
       axios
           .get(`http://127.0.0.1:8000/sensor/data/${uid}`)
