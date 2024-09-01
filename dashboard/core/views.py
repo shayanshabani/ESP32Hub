@@ -50,3 +50,16 @@ def start(request):
     devices = Device.objects.all()
     for device in devices:
         client.subscribe(device.topic, 0)
+
+
+def add(request):
+    data = json.loads(request.body)
+    name = data.get('name')
+    device_type = data.get('type')
+    from core.models import Sensor, BooleanActuator, IntegerActuator
+    if int(device_type) == 0:
+        BooleanActuator.objects.create(name=name, topic=name, device_type=device_type)
+    elif int(device_type) == 1:
+        IntegerActuator.objects.create(name=name, topic=name, device_type=device_type)
+    else:
+        Sensor.objects.create(name=name, topic=name, device_type=device_type)

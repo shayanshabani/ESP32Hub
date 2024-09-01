@@ -14,6 +14,8 @@ urlpatterns = [
 
     path('integer/<str:uid>', views.integer, name='send_int'),
 
+    path('add', views, name='add'),
+
     path('start', views.start)
 
 ]
