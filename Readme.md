@@ -1,6 +1,6 @@
 # IOT management system
 
-Control sensors and actuators connected to ESP32 over the internet!
+Controling sensors and actuators connected to ESP32 over the internet!
 
 ## Tools
 - Django
@@ -11,33 +11,30 @@ Control sensors and actuators connected to ESP32 over the internet!
 
 
 ## Implementation Details
-This project has 4 part:
+This project has 4 parts:
 - ESP32 codes
 - Django backend
 - Vue.js frontend
 - Musquito broker
 
-ESP32s connect to a mqtt broker, and send their data and recive commands in json. Django server connect to broker, and send and recive data. each device has a object in django, with an token. this token is used for authentication and is send with each message.  to add device, you can use your panel in frontend. data is saved in a sql table, with device and time.
+ESP32s connect to a mqtt broker, so they can send their collected data and recive commands in json. Django server connects to the broker, and then sends and receives data. each device has a corresponding object in Django with a token. this token is sent with each message to authenticate the device. You can add as many devices as you want by using the Front-end panel. The collected data will be saved in the database.
 
 
 ## How to Run
 
-First, run a mosqutio broker on a server, you can use your it's offical documents. 
-After runnig that, you should update the code for ESP32 to connect to wifi and also connect to mqtt broker.
-also change the credentials of mqtt broker in mqtt_client file in the backend. now you can run django backend with this command in the folder of dashboard:
+First, run a Mosquitto broker on a server. 
+After running that, you should update the code for ESP32 to connect to wifi and also connect to the mqtt broker.
+Moreover, change the credentials of the mqtt broker in the mqtt_client file in the backend. now you can run Django Back-end with this command in the dashboard folder:
 ```bash
 python manage.py runserver
 ```
 
-after that, run this command in frontend folder to starts serving frontend:
+after that, run this command in the Front-end folder to start the Front-end:
 ```bash
 npm run serve
 ```
 
-for each esp32, you need a token, you can get that token by adding a new device in the frontend. you should be able to see your devices.
-then upload code to the esp32 and customize ports if you like. when you login in you accuant, it gets your devices and show their contorls and data to you.
-
-you can use bore for testing project over the Internet. 
+For each ESP32 device, you need a token. You can get that token by adding a new device in the frontend. All devices are shown in the Front-end section. Upload the code to the ESP32 and customize the ports if you want. When the account is logged in, the data and its control system are shown. Bore can be used to test the project over the internet. 
 
 
 ## Results
